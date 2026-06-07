@@ -17,13 +17,9 @@ class HabitRead(BaseModel):
     created_at: datetime.datetime
 
 
-class HabitList(BaseModel):
-    data: list[HabitRead]
-
-
 class HabitUpdate(BaseModel):
-    name: Optional[str]
-    frequency: Optional[str]
+    name: Optional[str] = None
+    frequency: Optional[str] = None
 
 
 class HabitCompletionCreate(BaseModel):
