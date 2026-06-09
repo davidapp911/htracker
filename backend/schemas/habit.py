@@ -23,6 +23,7 @@ class HabitUpdate(BaseModel):
 
 
 class HabitCompletionCreate(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     logged_at: datetime.date
 
 

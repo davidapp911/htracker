@@ -54,6 +54,15 @@ def add_completion(
     db: Session, user_id: int, habit_id: int, data: HabitCompletionCreate
 ) -> HabitCompletion:
     read_habit(db, user_id, habit_id)
+    existing = db.execute(
+        select(HabitCompletion).where(
+            HabitCompletion.habit_id == habit_id, HabitCompletion.logged_at == data.logged_at
+        )
+    )
+
+    if existing:
+        raise ValueError("Already completed")
+
     completion = HabitCompletion(logged_at=data.logged_at, habit_id=habit_id)
 
     db.add(completion)
