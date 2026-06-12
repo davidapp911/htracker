@@ -1,3 +1,5 @@
+import datetime
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -85,9 +87,48 @@ def create_habit(create_user, habit_factory):
 
 
 @pytest.fixture(scope="function")
+def create_multiple_habits(create_user, habit_factory):
+    def _factory(n: int, user=None):
+        target = user or create_user
+        return [habit_factory.create(user=target) for _ in range(n)]
+
+    yield _factory
+
+
+@pytest.fixture(scope="function")
 def completion_factory(db_session):
     HabitCompletionFactory._meta.sqlalchemy_session = db_session
 
     yield HabitCompletionFactory
 
     HabitCompletionFactory._meta.sqlalchemy_session = None
+
+
+@pytest.fixture(scope="function")
+def create_completion(create_habit, completion_factory):
+    return completion_factory.create(habit=create_habit)
+
+
+@pytest.fixture(scope="function")
+def create_multiple_completions(completion_factory):
+    def _factory(pattern: list[int], habit=None):
+        return [
+            completion_factory.create(
+                habit=habit, logged_at=datetime.date.today() - datetime.timedelta(days=n)
+            )
+            for n in pattern
+        ]
+
+    yield _factory
+
+
+@pytest.fixture(scope="function")
+def create_data_for_user(create_user, create_multiple_habits, create_multiple_completions):
+    def _factory(habit_count, completions_patterns, user=None):
+        target = user or create_user
+        habits = create_multiple_habits(habit_count, user=target)
+
+        for h, pattern in zip(habits, completions_patterns):
+            create_multiple_completions(pattern, habit=h)
+
+    yield _factory

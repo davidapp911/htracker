@@ -35,4 +35,5 @@ markers = [
     "focus: for test that is the focus of the session",
     "auth: tests related to auth route",
     "streaks: tests related to the streaks service",
+    "stats: tests related to stats service",
 ]

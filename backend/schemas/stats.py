@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class StatsResponse(BaseModel):
+class SummaryResponse(BaseModel):
     completions: int
     missed: int
     longest_streak: int

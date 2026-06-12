@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from backend.api.deps import current_user, database_session
 from backend.core.exceptions import ServiceError
 from backend.models.user import User
-from backend.schemas.stats import StatsResponse, StreakResponse
+from backend.schemas.stats import StreakResponse, SummaryResponse
 from backend.services.stats import get_all_streaks, get_stats
 
 router = APIRouter()
@@ -20,7 +20,7 @@ def get_streaks(db: Session = Depends(database_session), user: User = Depends(cu
     return streaks
 
 
-@router.get("/summary", response_model=StatsResponse)
+@router.get("/summary", response_model=SummaryResponse)
 def get_summary(
     days: int = 7, db: Session = Depends(database_session), user: User = Depends(current_user)
 ):

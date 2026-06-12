@@ -4,7 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from backend.models.habit import Habit, HabitCompletion
-from backend.schemas.stats import StatsResponse, StreakResponse
+from backend.schemas.stats import StreakResponse, SummaryResponse
 from backend.services.habits import read_habits
 from backend.services.streak import calculate_current_streak
 
@@ -22,7 +22,7 @@ def get_all_streaks(db: Session, user_id: int) -> list[StreakResponse]:
     ]
 
 
-def get_stats(db: Session, user_id: int, days: int) -> StatsResponse:
+def get_stats(db: Session, user_id: int, days: int) -> SummaryResponse:
     cutoff = datetime.date.today() - datetime.timedelta(days=days - 1)
 
     completions = (
@@ -46,4 +46,4 @@ def get_stats(db: Session, user_id: int, days: int) -> StatsResponse:
 
     longest_streak = max((s.streak_length for s in streaks), default=0)
 
-    return StatsResponse(completions=completions, missed=missed, longest_streak=longest_streak)
+    return SummaryResponse(completions=completions, missed=missed, longest_streak=longest_streak)
