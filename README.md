@@ -1,5 +1,7 @@
 # Habit Tracker
 
+[![CI](https://github.com/davidapp911/htracker/actions/workflows/ci.yml/badge.svg)](https://github.com/davidapp911/htracker/actions/workflows/ci.yml)
+
 Personal habit tracker with daily check-ins, streak tracking, and completion stats.
 
 ## Stack

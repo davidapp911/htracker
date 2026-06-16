@@ -1,6 +1,7 @@
 import pytest
 
 from backend.schemas.user import TokenResponse, UserResponse
+from tests.constants import GARBAGE_TOKEN_HEADER
 
 
 @pytest.mark.auth
@@ -58,3 +59,34 @@ def test_me_without_valid_token(client):
     response = client.get("/auth/me")
 
     assert response.status_code == 401
+
+
+@pytest.mark.auth
+def test_me_with_expired_token(client, expired_token_headers):
+    response = client.get("/auth/me", headers=expired_token_headers)
+
+    assert response.status_code == 401
+
+
+@pytest.mark.auth
+def test_me_with_invalid_token(client):
+    response = client.get("/auth/me", headers=GARBAGE_TOKEN_HEADER)
+
+    assert response.status_code == 401
+
+
+@pytest.mark.auth
+def test_me_with_token_for_deleted_user(client, deleted_user_headers):
+    response = client.get("/auth/me", headers=deleted_user_headers)
+
+    assert response.status_code == 401
+
+
+@pytest.mark.auth
+def test_register_missing_field(client):
+    response = client.post(
+        "/auth/register",
+        json={"email": "test@example.com", "username": "testuser"},
+    )
+
+    assert response.status_code == 422

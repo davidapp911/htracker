@@ -1,5 +1,6 @@
 import datetime
 
+import jwt
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -8,8 +9,11 @@ from sqlalchemy.pool import StaticPool
 
 import backend.models  # noqa: F401 — registers models with Base.metadata
 from backend.api.deps import database_session
+from backend.core.config import settings
+from backend.core.security import create_access_token
 from backend.db.base import Base
 from backend.main import app
+from backend.models.user import User
 from tests.constants import DEFAULT_TEST_USER_PASSWORD
 from tests.factories import HabitCompletionFactory, HabitFactory, UserFactory
 
@@ -46,13 +50,32 @@ def client(db_session):
 
 @pytest.fixture(scope="function")
 def auth_headers(create_user, db_session):
-    from backend.core.security import create_access_token
-    from backend.models.user import User
 
     user = db_session.query(User).filter_by(email=create_user.email).first()
     token = create_access_token(user.id)
 
     return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture(scope="function")
+def expired_token_headers(create_user, db_session):
+    payload = {
+        "sub": str(create_user.id),
+        "exp": datetime.datetime.now(datetime.timezone.utc)
+        - datetime.timedelta(minutes=1),
+    }
+
+    return {
+        "Authorization": f"Bearer {jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')}"
+    }
+
+
+@pytest.fixture(scope="function")
+def deleted_user_headers(create_user, auth_headers, db_session):
+    db_session.delete(create_user)
+    db_session.commit()
+
+    return auth_headers
 
 
 @pytest.fixture(scope="function")

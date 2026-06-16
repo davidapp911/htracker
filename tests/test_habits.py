@@ -87,18 +87,14 @@ def test_update_habit_no_auth(client, create_habit):
 @pytest.mark.habits
 def test_update_habit_wrong_user(client, auth_headers, user_factory, habit_factory):
     new_habit = habit_factory.create(user=user_factory.create())
-    response = client.put(
-        f"/habits/{new_habit.id}", json=HABIT_UPDATE_DATA, headers=auth_headers
-    )
+    response = client.put(f"/habits/{new_habit.id}", json=HABIT_UPDATE_DATA, headers=auth_headers)
 
     assert response.status_code == 403
 
 
 @pytest.mark.habits
 def test_update_habit_not_found(client, auth_headers):
-    response = client.put(
-        f"/habits/{NOT_FOUND_ID}", json=HABIT_UPDATE_DATA, headers=auth_headers
-    )
+    response = client.put(f"/habits/{NOT_FOUND_ID}", json=HABIT_UPDATE_DATA, headers=auth_headers)
 
     assert response.status_code == 404
 
@@ -149,9 +145,7 @@ def test_check_in_duplicate(client, auth_headers, create_completion):
 @pytest.mark.habits
 def test_check_in_wrong_user(client, auth_headers, user_factory, habit_factory):
     habit = habit_factory(user=user_factory())
-    response = client.post(
-        f"/habits/{habit.id}/logs", json=COMPLETION_TODAY, headers=auth_headers
-    )
+    response = client.post(f"/habits/{habit.id}/logs", json=COMPLETION_TODAY, headers=auth_headers)
 
     assert response.status_code == 403
 
@@ -168,9 +162,7 @@ def test_delete_checkin(client, auth_headers, create_completion):
 
 @pytest.mark.habits
 def test_delete_checkin_not_found(client, auth_headers, create_habit):
-    response = client.delete(
-        f"/habits/{create_habit.id}/logs/{NOT_FOUND_ID}", headers=auth_headers
-    )
+    response = client.delete(f"/habits/{create_habit.id}/logs/{NOT_FOUND_ID}", headers=auth_headers)
 
     assert response.status_code == 404
 
@@ -179,9 +171,7 @@ def test_delete_checkin_not_found(client, auth_headers, create_habit):
 def test_delete_checkin_wrong_user(
     client, auth_headers, user_factory, habit_factory, completion_factory
 ):
-    completion = completion_factory.create(
-        habit=habit_factory.create(user=user_factory.create())
-    )
+    completion = completion_factory.create(habit=habit_factory.create(user=user_factory.create()))
     response = client.delete(
         f"/habits/{completion.habit.id}/logs/{completion.id}", headers=auth_headers
     )
@@ -213,3 +203,28 @@ def test_get_streak_no_auth(client, create_habit):
     response = client.get(f"/habits/{create_habit.id}/streak")
 
     assert response.status_code == 401
+
+
+@pytest.mark.habits
+def test_create_habit_missing_field(client, auth_headers):
+    response = client.post("/habits/", json={"name": "new habit"}, headers=auth_headers)
+
+    assert response.status_code == 422
+
+
+@pytest.mark.habits
+def test_update_habit_invalid_type(client, auth_headers, create_habit):
+    response = client.put(f"/habits/{create_habit.id}", json={"name": 123}, headers=auth_headers)
+
+    assert response.status_code == 422
+
+
+@pytest.mark.focus
+def test_check_in_invalid_date(client, auth_headers, create_habit):
+    response = client.post(
+        f"/habits/{create_habit.id}/logs",
+        json={"logged_at": "not-a-date"},
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 422
