@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getMe } from "../api/auth";
+import { login as apiLogin, getMe } from "../api/auth";
 
 export function useAuth() {
     const [user, setUser] = useState(null);
@@ -14,9 +14,11 @@ export function useAuth() {
             .finally(() => setLoading(false));
     }, []);
 
-    function login(token) {
-        localStorage.setItem("token", token);
-        return getMe().then(setUser);
+    function login(credentials) {
+        return apiLogin(credentials).then(({ access_token }) => {
+            localStorage.setItem("token", access_token);
+            return getMe().then(setUser);
+        });
     }
 
     function logout() {
