@@ -15,7 +15,8 @@ instance.interceptors.request.use((config) => {
 instance.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401) {
+        const url = error.config?.url ?? "";
+        if (error.response?.status === 401 && !url.includes("/auth/")) {
             localStorage.removeItem("token");
             window.location.href = "/login";
         }
