@@ -8,13 +8,11 @@ from backend.schemas.user import LoginRequest, TokenResponse, UserCreate
 
 
 def register_user(db: Session, data: UserCreate) -> User:
-    # check if email is in db
-    existing = db.execute(
-        select(User).where(User.email == data.email)
-    ).scalar_one_or_none()
+    if db.execute(select(User).where(User.email == data.email)).scalar_one_or_none():
+        raise DuplicateError("Email already in use.")
 
-    if existing:
-        raise DuplicateError()
+    if db.execute(select(User).where(User.username == data.username)).scalar_one_or_none():
+        raise DuplicateError("Username already taken.")
 
     user = User(
         email=data.email,
@@ -30,16 +28,14 @@ def register_user(db: Session, data: UserCreate) -> User:
 
 
 def authenticate_user(db: Session, data: LoginRequest) -> TokenResponse:
-    user = db.execute(
-        select(User).where(User.username == data.username)
-    ).scalar_one_or_none()
+    user = db.execute(select(User).where(User.username == data.username)).scalar_one_or_none()
 
     if not user:
-        raise NotFoundError()
+        raise NotFoundError("Username not found.")
 
     correct_password = verify_password(data.password, user.hashed_password)
 
     if not correct_password:
-        raise AuthenticationError()
+        raise AuthenticationError("Password does not match.")
 
     return TokenResponse(access_token=create_access_token(user.id))

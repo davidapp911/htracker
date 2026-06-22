@@ -15,13 +15,13 @@ class ServiceError(Exception):
 
 
 class AuthenticationError(ServiceError):
-    def __init__(self) -> None:
-        super().__init__("Invalid credentials.", 401)
+    def __init__(self, message: str = "Invalid credentials.") -> None:
+        super().__init__(message, 401)
 
 
 class NotFoundError(ServiceError):
-    def __init__(self) -> None:
-        super().__init__("Not found.", 404)
+    def __init__(self, message: str = "Not found.") -> None:
+        super().__init__(message, 404)
 
 
 class ForbiddenError(ServiceError):
@@ -30,5 +30,5 @@ class ForbiddenError(ServiceError):
 
 
 class DuplicateError(ServiceError):
-    def __init__(self) -> None:
-        super().__init__("Already exists.", 409)
+    def __init__(self, message: str = "Already exists.") -> None:
+        super().__init__(message, 409)
