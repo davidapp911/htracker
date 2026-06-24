@@ -39,7 +39,7 @@ export default function LoginPage() {
                     <Input name="username" type="text" placeholder="username" value={form.username} onChange={handleChange} />
                     <Input name="password" type="password" placeholder="password" value={form.password} onChange={handleChange} />
                     <Button type="submit" disabled={loading} className="font-medium w-full py-2">
-                        {loading ? "Logging in…" : "Login"}
+                        {loading ? "Logging in…" : "Log in"}
                     </Button>
                 </form>
             </div>

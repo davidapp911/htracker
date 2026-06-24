@@ -10,7 +10,7 @@ class LoginPage(BasePage):
         self.page.get_by_role("textbox", name="password").fill(user_data["password"])
 
     def submit_form(self):
-        self.page.get_by_role("button", name="Login").click()
+        self.page.get_by_role("button", name="Log in").click()
 
     def dashboard_heading(self):
         return self.page.get_by_role("heading", name="Today's Habits")

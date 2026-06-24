@@ -8,7 +8,7 @@ on:
     workflow_dispatch:
 
 jobs:
-    tests:
+    api:
         runs-on: ubuntu-latest
         env:
             DATABASE_URL: "sqlite:///:memory:"
@@ -17,13 +17,79 @@ jobs:
         steps:
             - name: checkout repo
               uses: actions/checkout@v6
-            
+
             - name: python setup
               uses: actions/setup-python@v6
               with:
                 python-version: "3.14.2"
-            
+
             - name: deps setup
               run: pip install -e ".[dev]"
-            
+
             - run: pytest --ignore=tests/e2e
+
+    e2e:
+        runs-on: ubuntu-latest
+        services:
+            postgres:
+                image: postgres:16
+                env:
+                    POSTGRES_USER: postgres
+                    POSTGRES_PASSWORD: postgres
+                    POSTGRES_DB: htracker_e2e
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd pg_isready
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+        env:
+            DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/htracker_e2e"
+            DATABASE_URL_E2E: "postgresql://postgres:postgres@localhost:5432/htracker_e2e"
+            SECRET_KEY: "ci-e2e-secret-key"
+            ACCESS_TOKEN_EXPIRE_MINUTES: 30
+        steps:
+            - name: checkout repo
+              uses: actions/checkout@v6
+
+            - name: python setup
+              uses: actions/setup-python@v6
+              with:
+                python-version: "3.14.2"
+
+            - name: install python deps
+              run: pip install -e ".[dev]"
+
+            - name: install playwright browsers
+              run: playwright install --with-deps chromium
+
+            - name: run migrations
+              run: alembic upgrade head
+
+            - name: start backend
+              run: uvicorn backend.main:app --host 0.0.0.0 --port 8000 &
+
+            - name: node setup
+              uses: actions/setup-node@v4
+              with:
+                node-version: "20"
+
+            - name: install frontend deps
+              run: npm install
+              working-directory: frontend
+
+            - name: write frontend env
+              run: echo "VITE_API_URL=http://localhost:8000" > frontend/.env
+
+            - name: start frontend
+              run: npm run dev &
+              working-directory: frontend
+
+            - name: wait for servers
+              run: |
+                timeout 30 bash -c 'until curl -sf http://localhost:8000/health; do sleep 1; done'
+                timeout 30 bash -c 'until curl -sf http://localhost:5173; do sleep 1; done'
+
+            - name: run e2e tests
+              run: pytest -m e2e

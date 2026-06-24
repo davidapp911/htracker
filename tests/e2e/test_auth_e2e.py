@@ -95,3 +95,9 @@ def test_login_wrong_password(page: Page, base_url, create_user, reset_db):
 
     page_obj.submit_form()
     expect(page_obj.wrong_password_message()).to_be_visible()
+
+
+@pytest.mark.e2e
+def test_protected_route_redirects_to_login(page: Page, base_url, reset_db):
+    page.goto(f"{base_url}/dashboard")
+    expect(page.get_by_role("heading", name="Log in")).to_be_visible()
