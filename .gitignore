@@ -35,3 +35,6 @@ pnpm-debug.log*
 snip.py
 query.sql
 .coverage
+
+# Locust HTML reports
+tests/load/Locust_*.html

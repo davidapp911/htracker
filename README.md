@@ -78,14 +78,34 @@ All endpoints except `/health`, `/auth/register`, and `/auth/login` require a Be
 
 ## Running tests
 
+### API & unit tests
+
 ```bash
-cd backend
-pytest                    # all tests
-pytest -m stats           # stats tests only
-pytest -m streaks         # streak unit tests only
-pytest -m auth            # auth tests only
-pytest -m focus           # current working test
+pytest --ignore=tests/e2e  # all backend tests
+pytest -m stats            # stats tests only
+pytest -m streaks          # streak unit tests only
+pytest -m auth             # auth tests only
+pytest -m focus            # current working test
 ```
+
+### E2E tests (pytest-playwright)
+
+Requires the backend and frontend dev servers to be running, and `DATABASE_URL_E2E` set to a real Postgres instance.
+
+```bash
+playwright install chromium
+pytest -m e2e
+```
+
+### Load tests (Locust)
+
+Requires `LOAD_TEST_URL` set in `.env`.
+
+```bash
+locust -f tests/load/locustfile.py
+```
+
+Open `http://localhost:8089`, set users to 50, spawn rate to 5. See `tests/load/README.md` for baseline results.
 
 ## Linting
 
